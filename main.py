@@ -41,7 +41,7 @@ if __name__ == "__main__":
     print('Generating fingerprints...')
     for camera in cameras:
         imgs = img_collector.imgs[camera]
-        fp = [fingerprint.get_fingerprint(imgs)]
+        fp = fingerprint.get_fingerprint(imgs)
         feature_collector.fingerprints[camera] = fp
     print('Finished!')
 
