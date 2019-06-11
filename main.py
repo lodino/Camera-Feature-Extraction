@@ -82,9 +82,11 @@ if __name__ == "__main__":
 
     all_features = np.concatenate((transformed_cc, transformed_bc_1, transformed_bc_2, transformed_lcc,
                                    np.array([feature_collector.moments[camera] for camera in cameras])), axis=1)
-    all_features_dict = dict()
+    final_pca = PCA(n_components=5, random_state=42)
+    final_features = final_pca.fit_transform(all_features)
+    features_dict = dict()
     for ind in range(len(cameras)):
-        all_features_dict[cameras[ind]] = all_features[ind]
+        features_dict[cameras[ind]] = final_features[ind]
 
-    print(all_features_dict)
+    print(features_dict)
 # TODO: Visualize the result
