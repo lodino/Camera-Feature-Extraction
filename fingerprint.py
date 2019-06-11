@@ -4,7 +4,8 @@ import cv2
 def get_fingerprint(imgs):
     numerator = 0
     dominator = 0
-    for img in imgs:
+    for img_path in imgs:
+        img = cv2.imread(img_path)
         denoised = cv2.fastNlMeansDenoisingColored(img, None, 10, 10, 7, 21)  # denoise the input image
         w = img - denoised
         numerator += w * img

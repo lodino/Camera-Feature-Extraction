@@ -7,4 +7,4 @@ def load_img_from_dir(dir_path: str, f: str) -> [str]:
     else:
         if dir_path[-1] != '/':
             dir_path += '/'
-        return list[glob.glob(dir_path + '*.' + f)]
+        return list(glob.glob(dir_path + '*.' + f))

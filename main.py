@@ -26,21 +26,26 @@ if __name__ == "__main__":
     properties = {'input_dir': args.dir, 'format': args.format}
 
     # Load imgaes
+    print('Loading images...')
     imgs = load_img.load_img_from_dir(properties['input_dir'], properties['format'])
     img_collector = collector.ImageCollector()
     for filename in imgs:
         camera = extract_camera_name(filename)
         img_collector[camera].append(filename)
     cameras = img_collector.imgs.keys()
+    print('Images loaded!')
 
     feature_collector = collector.FeatureCollector()
 
     # Get fingerprint
+    print('Generating fingerprints...')
     for camera in cameras:
         imgs = img_collector.imgs[camera]
         fp = [fingerprint.get_fingerprint(imgs)]
         feature_collector.fingerprints[camera] = fp
+    print('Finished!')
 
+    print('Extracting features...')
     for camera in cameras:
         fp = feature_collector.fingerprints[camera]
         # Get statistic normalized central moments of each channel of the fingerprint
@@ -63,8 +68,10 @@ if __name__ == "__main__":
         # Get block covariance
         feature_collector.block_covariances_1[camera] = block_covariance.get_block_covariance(fp, 2)
         feature_collector.block_covariances_2[camera] = block_covariance.get_block_covariance(fp, 3)
+    print('Finished!')
 
     # Feature reduction
+    print('Reducing features...')
     cc_pca = PCA(n_components=4, random_state=42)
     bc_pca_1 = PCA(n_components=4, random_state=42)
     bc_pca_2 = PCA(n_components=4, random_state=42)
@@ -87,6 +94,8 @@ if __name__ == "__main__":
     features_dict = dict()
     for ind in range(len(cameras)):
         features_dict[cameras[ind]] = final_features[ind]
+    print('Finished!')
 
+    print('FINAL FEATURES:')
     print(features_dict)
 # TODO: Visualize the result
