@@ -13,7 +13,7 @@ def estimated_autocorrelation(x):
 
 
 # Given one (random) channel of the fingerprint of an image
-def get_autocorrelation_feature(img):
+def get_autocorrelation_feature(img) -> [int]:
     vecs = []
     series = np.sum(img, axis=0)  # expect to have the shape of the height of img
     autocorrelation = estimated_autocorrelation(series)
@@ -22,5 +22,5 @@ def get_autocorrelation_feature(img):
         vec = []
         for j in range(vec_len):
             vec.append(autocorrelation[j*8])
-        vecs.append(vec)
+        vecs.append(np.mean(vec))
     return vecs

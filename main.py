@@ -9,6 +9,7 @@ from sklearn.decomposition import PCA
 import argparse
 from itertools import permutations
 import re
+import numpy as np
 
 
 def extract_camera_name(path: str) -> str:
@@ -53,6 +54,7 @@ if __name__ == "__main__":
             for i in range(4):
                 for j in range(4):
                     cross_correlations.append(cross_correlation.get_cross_correlation(img1, img2, i, j))
+        feature_collector.cross_correlations[camera] = cross_correlations
 
         # Get linear-pattern correlation (just take one channel is ok, here choose red)
         feature_collector.linear_correlations[camera] = linear_pattern_cross_correlation.get_autocorrelation_feature(
@@ -61,4 +63,28 @@ if __name__ == "__main__":
         # Get block covariance
         feature_collector.block_covariances_1[camera] = block_covariance.get_block_covariance(fp, 2)
         feature_collector.block_covariances_2[camera] = block_covariance.get_block_covariance(fp, 3)
-# TODO: PCA to reduce the dim of features
+
+    # Feature reduction
+    cc_pca = PCA(n_components=4, random_state=42)
+    bc_pca_1 = PCA(n_components=4, random_state=42)
+    bc_pca_2 = PCA(n_components=4, random_state=42)
+    lcc_pca = PCA(n_components=4, random_state=42)
+
+    original_cc = [feature_collector.cross_correlations[camera] for camera in cameras]
+    original_bc_1 = [feature_collector.block_covariances_1[camera] for camera in cameras]
+    original_bc_2 = [feature_collector.block_covariances_2[camera] for camera in cameras]
+    original_lcc = [feature_collector.linear_correlations[camera] for camera in cameras]
+
+    transformed_cc = cc_pca.fit_transform(original_cc)
+    transformed_bc_1 = bc_pca_1.fit_transform(original_bc_1)
+    transformed_bc_2 = bc_pca_2.fit_transform(original_bc_2)
+    transformed_lcc = lcc_pca.fit_transform(original_lcc)
+
+    all_features = np.concatenate((transformed_cc, transformed_bc_1, transformed_bc_2, transformed_lcc,
+                                   np.array([feature_collector.moments[camera] for camera in cameras])), axis=1)
+    all_features_dict = dict()
+    for ind in range(len(cameras)):
+        all_features_dict[cameras[ind]] = all_features[ind]
+
+    print(all_features_dict)
+# TODO: Visualize the result
