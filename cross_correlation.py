@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def get_element(img, coordinate):
     x = coordinate[0]
     y = coordinate[1]
@@ -8,10 +11,14 @@ def get_element(img, coordinate):
         return img[x, y]
 
 
-def get_cross_correlation(img1, img2, offsetx, offsety):
-    cross_correlation = 0
-    size = img1.shape[:2]
-    for i in range(size[0]):
-        for j in range(size[1]):
-            cross_correlation += get_element(img1, (i, j)) * get_element(img2, (i - offsetx, j - offsety))
-    return cross_correlation
+def crop_and_pad(img, r_offset, c_offset):
+    img = img[:img.shape[0] - r_offset, :img.shape[1] - c_offset]
+    return np.pad(img, ((0, r_offset), (c_offset, 0)), 'constant', constant_values=0)
+
+
+def get_cross_correlation(img1, img2, r_offset, c_offset):
+    # for i in range(size[0]):
+    #     for j in range(size[1]):
+    #         cross_correlation += get_element(img1, (i, j)) * get_element(img2, (i - r_offset, j - c_offset))
+    img2 = crop_and_pad(img2, r_offset, c_offset)
+    return np.correlate(np.ravel(img1), np.ravel(img2))[0]

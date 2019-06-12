@@ -1,6 +1,6 @@
 def get_block_covariance(img, k):
     vecs = []
-    size = img[:2]
+    size = img.shape[:2]
     block_size = [size[0] // k, size[1] // k]
     for x in range(block_size[0]):
         for y in range(block_size[1]):

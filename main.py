@@ -12,6 +12,12 @@ import re
 import numpy as np
 
 
+def eliminate_nan_inf(arr):
+    arr[np.isnan(arr)] = 0
+    arr[np.isinf(arr)] = 0
+    return arr
+
+
 def extract_camera_name(path: str) -> str:
     name = re.match(r'/?(\S*/)*(\S*.\S*)', path).group(2)
     camera_name = re.match(r'\((\S*)\)\S*$', name).group(1)
@@ -47,6 +53,7 @@ if __name__ == "__main__":
 
     print('Extracting features...')
     for camera in cameras:
+        print(f"Start extracting features of {camera}...")
         fp = feature_collector.fingerprints[camera]
         # Get statistic normalized central moments of each channel of the fingerprint
         feature_collector.moments[camera] = statistical_moments.get_moments(fp)
@@ -68,6 +75,7 @@ if __name__ == "__main__":
         # Get block covariance
         feature_collector.block_covariances_1[camera] = block_covariance.get_block_covariance(fp, 2)
         feature_collector.block_covariances_2[camera] = block_covariance.get_block_covariance(fp, 3)
+        print(f"Finished extraction of {camera}")
     print('Finished!')
 
     # Feature reduction
@@ -77,10 +85,15 @@ if __name__ == "__main__":
     bc_pca_2 = PCA(n_components=4, random_state=42)
     lcc_pca = PCA(n_components=4, random_state=42)
 
-    original_cc = [feature_collector.cross_correlations[camera] for camera in cameras]
-    original_bc_1 = [feature_collector.block_covariances_1[camera] for camera in cameras]
-    original_bc_2 = [feature_collector.block_covariances_2[camera] for camera in cameras]
-    original_lcc = [feature_collector.linear_correlations[camera] for camera in cameras]
+    original_cc = np.array([feature_collector.cross_correlations[camera] for camera in cameras])
+    original_bc_1 = np.array([feature_collector.block_covariances_1[camera] for camera in cameras])
+    original_bc_2 = np.array([feature_collector.block_covariances_2[camera] for camera in cameras])
+    original_lcc = np.array([feature_collector.linear_correlations[camera] for camera in cameras])
+
+    eliminate_nan_inf(original_cc)
+    eliminate_nan_inf(original_bc_1)
+    eliminate_nan_inf(original_bc_2)
+    eliminate_nan_inf(original_lcc)
 
     transformed_cc = cc_pca.fit_transform(original_cc)
     transformed_bc_1 = bc_pca_1.fit_transform(original_bc_1)
