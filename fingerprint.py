@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 import matplotlib.pyplot as plt
 
 
@@ -14,6 +15,12 @@ def get_fingerprint(imgs):
         img = plt.imread(img_path)
         denoised = cv2.GaussianBlur(img, (3, 3), 0)  # denoise the input image
         w = img - denoised
+        # Consider some entries are 0 (divide-by-zero err)
         numerator += w * img
+        numerator[np.isnan(numerator)] = 0
+        numerator[np.isinf(numerator)] = 0
         dominator += img ** 2
+        dominator[np.isnan(dominator)] = 0
+        numerator[np.isinf(dominator)] = 0
+
     return numerator / dominator

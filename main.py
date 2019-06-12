@@ -54,8 +54,8 @@ if __name__ == "__main__":
         # Get cross-correlation
         cross_correlations = []
         for pair in list(permutations([0, 1, 2], 2)):
-            img1 = fp[camera][:, :, pair[0]]
-            img2 = fp[camera][:, :, pair[1]]
+            img1 = fp[:, :, pair[0]]
+            img2 = fp[:, :, pair[1]]
             for i in range(4):
                 for j in range(4):
                     cross_correlations.append(cross_correlation.get_cross_correlation(img1, img2, i, j))
