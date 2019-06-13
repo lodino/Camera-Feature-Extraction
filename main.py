@@ -10,6 +10,8 @@ import argparse
 from itertools import permutations
 import re
 import numpy as np
+import matplotlib.pyplot as plt
+import json
 
 
 def eliminate_nan_inf(arr):
@@ -22,6 +24,34 @@ def extract_camera_name(path: str) -> str:
     name = re.match(r'/?(\S*/)*(\S*.\S*)', path).group(2)
     camera_name = re.match(r'\((\S*)\)\S*$', name).group(1)
     return camera_name
+
+
+def extract_features(fp, cc_pca, bc_pca_1, bc_pca_2, lcc_pca, final_pca):
+    # Get statistic normalized central moments of each channel of the fingerprint
+    moments = statistical_moments.get_moments(fp)
+
+    # Get cross-correlation
+    cross_correlations = []
+    for pair in list(permutations([0, 1, 2], 2)):
+        img1 = fp[:, :, pair[0]]
+        img2 = fp[:, :, pair[1]]
+        for i in range(4):
+            for j in range(4):
+                cross_correlations.append(cross_correlation.get_cross_correlation(img1, img2, i, j))
+
+    # Get linear-pattern correlation (just take one channel is ok, here choose red)
+    linear_correlations = linear_pattern_cross_correlation.get_autocorrelation_feature(fp[:, :, 2])
+
+    # Get block covariance
+    bc1 = block_covariance.get_block_covariance(fp, 2)
+    bc1 = eliminate_nan_inf(bc1)
+    bc2 = block_covariance.get_block_covariance(fp, 3)
+    bc2 = eliminate_nan_inf(bc2)
+
+    all_features = np.concatenate((cc_pca.transform(np.array(cross_correlations)), bc_pca_1.transform(bc1),
+                                   bc_pca_2.transform(bc2), lcc_pca.transform(linear_correlations), moments))
+    final_features = final_pca.transform(all_features)
+    return final_features
 
 
 if __name__ == "__main__":
@@ -68,7 +98,7 @@ if __name__ == "__main__":
             for i in range(4):
                 for j in range(4):
                     cross_correlations.append(cross_correlation.get_cross_correlation(img1, img2, i, j))
-        feature_collector.cross_correlations[camera] = cross_correlations
+        feature_collector.cross_correlations[camera] = np.array(cross_correlations)
 
         # Get linear-pattern correlation (just take one channel is ok, here choose red)
         print(f"Start extracting linear-pattern correlation of {camera}...")
@@ -120,4 +150,19 @@ if __name__ == "__main__":
 
     print('FINAL FEATURES:')
     print(features_dict)
-# TODO: Visualize the result
+    print("Converting single points...")
+    scatters = dict()
+    for camera in cameras:
+        scatters[camera] = []
+        imgs = img_collector.imgs[camera]
+        for img in imgs:
+            im = plt.imread(img)
+            fp = fingerprint.get_fingerprint(im)
+            scatters[camera].append(extract_features(fp, cc_pca, bc_pca_1, bc_pca_2, lcc_pca, final_pca).tolist())
+    print("Finished!")
+    print("Saving info of scatters...")
+    scatters_txt = json.dumps(scatters)
+    with open('scatters.txt', 'w+') as f:
+        f.write(scatters_txt)
+        f.closed()
+    print("Saved to scatters.txt!")
