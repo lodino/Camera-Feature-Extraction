@@ -164,5 +164,4 @@ if __name__ == "__main__":
     scatters_txt = json.dumps(scatters)
     with open('scatters.txt', 'w+') as f:
         f.write(scatters_txt)
-        f.closed()
     print("Saved to scatters.txt!")
