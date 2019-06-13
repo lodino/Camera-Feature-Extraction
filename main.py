@@ -38,7 +38,7 @@ if __name__ == "__main__":
     for filename in imgs:
         camera = extract_camera_name(filename)
         img_collector[camera].append(filename)
-    cameras = img_collector.imgs.keys()
+    cameras = list(img_collector.imgs.keys())
     print('Images loaded!')
 
     feature_collector = collector.FeatureCollector()
@@ -48,17 +48,19 @@ if __name__ == "__main__":
     for camera in cameras:
         imgs = img_collector.imgs[camera]
         fp = fingerprint.get_fingerprint(imgs)
+        fp = eliminate_nan_inf(fp)
         feature_collector.fingerprints[camera] = fp
     print('Finished!')
 
     print('Extracting features...')
     for camera in cameras:
-        print(f"Start extracting features of {camera}...")
         fp = feature_collector.fingerprints[camera]
         # Get statistic normalized central moments of each channel of the fingerprint
+        print(f"Start extracting moments of {camera}...")
         feature_collector.moments[camera] = statistical_moments.get_moments(fp)
 
         # Get cross-correlation
+        print(f"Start extracting cross-correlation of {camera}...")
         cross_correlations = []
         for pair in list(permutations([0, 1, 2], 2)):
             img1 = fp[:, :, pair[0]]
@@ -69,12 +71,18 @@ if __name__ == "__main__":
         feature_collector.cross_correlations[camera] = cross_correlations
 
         # Get linear-pattern correlation (just take one channel is ok, here choose red)
+        print(f"Start extracting linear-pattern correlation of {camera}...")
         feature_collector.linear_correlations[camera] = linear_pattern_cross_correlation.get_autocorrelation_feature(
             fp[:, :, 2])
 
         # Get block covariance
-        feature_collector.block_covariances_1[camera] = block_covariance.get_block_covariance(fp, 2)
-        feature_collector.block_covariances_2[camera] = block_covariance.get_block_covariance(fp, 3)
+        print(f"Start extracting block covariance of {camera}...")
+        bc1 = block_covariance.get_block_covariance(fp, 2)
+        bc1 = eliminate_nan_inf(bc1)
+        feature_collector.block_covariances_1[camera] = bc1
+        bc2 = block_covariance.get_block_covariance(fp, 3)
+        bc2 = eliminate_nan_inf(bc2)
+        feature_collector.block_covariances_2[camera] = bc2
         print(f"Finished extraction of {camera}")
     print('Finished!')
 
@@ -90,10 +98,10 @@ if __name__ == "__main__":
     original_bc_2 = np.array([feature_collector.block_covariances_2[camera] for camera in cameras])
     original_lcc = np.array([feature_collector.linear_correlations[camera] for camera in cameras])
 
-    eliminate_nan_inf(original_cc)
-    eliminate_nan_inf(original_bc_1)
-    eliminate_nan_inf(original_bc_2)
-    eliminate_nan_inf(original_lcc)
+    original_cc = eliminate_nan_inf(original_cc)
+    original_bc_1 = eliminate_nan_inf(original_bc_1)
+    original_bc_2 = eliminate_nan_inf(original_bc_2)
+    original_lcc = eliminate_nan_inf(original_lcc)
 
     transformed_cc = cc_pca.fit_transform(original_cc)
     transformed_bc_1 = bc_pca_1.fit_transform(original_bc_1)
@@ -103,6 +111,7 @@ if __name__ == "__main__":
     all_features = np.concatenate((transformed_cc, transformed_bc_1, transformed_bc_2, transformed_lcc,
                                    np.array([feature_collector.moments[camera] for camera in cameras])), axis=1)
     final_pca = PCA(n_components=5, random_state=42)
+    eliminate_nan_inf(all_features)
     final_features = final_pca.fit_transform(all_features)
     features_dict = dict()
     for ind in range(len(cameras)):
