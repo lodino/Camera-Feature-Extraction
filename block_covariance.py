@@ -10,7 +10,6 @@ def get_block_covariance(img, k):
     c_list = random.sample(list(range(num_vecs[1])), 3 * k ** 2)
     for row in r_list:
         for col in c_list:
-            # Each of (i, j)th element in the block represents a vec. In regular cases, k=2 or k=3
             vec.append(np.ravel(img[row*k:(row+1)*k, col*k:(col+1)*k, :]))
     cov_mat = np.ravel(np.cov(vec))
     return np.ravel(cov_mat)
