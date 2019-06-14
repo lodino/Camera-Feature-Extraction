@@ -81,7 +81,7 @@ if __name__ == "__main__":
     print('Generating fingerprints...')
     for camera in cameras:
         imgs = img_collector.imgs[camera]
-        fp = fingerprint.get_fingerprint(imgs)
+        fp = fingerprint.get_fingerprint(imgs, camera)
         fp = eliminate_nan_inf(fp)
         feature_collector.fingerprints[camera] = fp
     print('Finished!')
@@ -161,7 +161,7 @@ if __name__ == "__main__":
         scatters[camera] = []
         imgs = img_collector.imgs[camera]
         for img in imgs:
-            fp = fingerprint.get_fingerprint([img])
+            fp = fingerprint.get_fingerprint([img], camera)
             scatters[camera].append(extract_features(fp, cc_pca, bc_pca_1, bc_pca_2, lcc_pca, final_pca).tolist())
     print("Finished!")
     print("Saving info of scatters...")
