@@ -30,7 +30,10 @@ def get_fingerprint(imgs, cam):
         '''
         img = plt.imread(img_path)
         if img.shape[:2] != size_dict[cam]:
-            img = np.transpose(img, (1, 0, 2))
+            if (img.shape[0] * img.shape[1]) == (size_dict[cam][0] * size_dict[cam][1]):
+                img = np.transpose(img, (1, 0, 2))
+            else:
+                continue
         denoised = cv2.GaussianBlur(img, (3, 3), 0)  # denoise the input image
         w = img - denoised
         # Consider some entries are 0 (divide-by-zero err)
