@@ -18,3 +18,4 @@ data/ - cam1/ - imgs
 
 #### TODO:
 * visualize the features
+* improve the result by trying with different filters
