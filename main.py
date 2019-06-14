@@ -10,7 +10,6 @@ import argparse
 from itertools import permutations
 import re
 import numpy as np
-import matplotlib.pyplot as plt
 import json
 
 
@@ -38,9 +37,13 @@ def extract_features(fp, cc_pca, bc_pca_1, bc_pca_2, lcc_pca, final_pca):
         for i in range(4):
             for j in range(4):
                 cross_correlations.append(cross_correlation.get_cross_correlation(img1, img2, i, j))
+    cc = np.array([cross_correlations])
+    eliminate_nan_inf(cc)
 
     # Get linear-pattern correlation (just take one channel is ok, here choose red)
     linear_correlations = linear_pattern_cross_correlation.get_autocorrelation_feature(fp[:, :, 2])
+    lcc = np.array([linear_correlations])
+    eliminate_nan_inf(lcc)
 
     # Get block covariance
     bc1 = block_covariance.get_block_covariance(fp, 2)
@@ -48,8 +51,9 @@ def extract_features(fp, cc_pca, bc_pca_1, bc_pca_2, lcc_pca, final_pca):
     bc2 = block_covariance.get_block_covariance(fp, 3)
     bc2 = eliminate_nan_inf(bc2)
 
-    all_features = np.concatenate((cc_pca.transform(np.array(cross_correlations)), bc_pca_1.transform(bc1),
-                                   bc_pca_2.transform(bc2), lcc_pca.transform(linear_correlations), moments))
+    all_features = np.concatenate((cc_pca.transform(cc), bc_pca_1.transform([bc1]),
+                                   bc_pca_2.transform([bc2]), lcc_pca.transform(lcc), [moments]))
+    eliminate_nan_inf(all_features)
     final_features = final_pca.transform(all_features)
     return final_features
 
@@ -98,6 +102,7 @@ if __name__ == "__main__":
             for i in range(4):
                 for j in range(4):
                     cross_correlations.append(cross_correlation.get_cross_correlation(img1, img2, i, j))
+        print(cross_correlations)
         feature_collector.cross_correlations[camera] = np.array(cross_correlations)
 
         # Get linear-pattern correlation (just take one channel is ok, here choose red)
@@ -156,8 +161,7 @@ if __name__ == "__main__":
         scatters[camera] = []
         imgs = img_collector.imgs[camera]
         for img in imgs:
-            im = plt.imread(img)
-            fp = fingerprint.get_fingerprint(im)
+            fp = fingerprint.get_fingerprint([img])
             scatters[camera].append(extract_features(fp, cc_pca, bc_pca_1, bc_pca_2, lcc_pca, final_pca).tolist())
     print("Finished!")
     print("Saving info of scatters...")
