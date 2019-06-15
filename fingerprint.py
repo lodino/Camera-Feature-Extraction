@@ -50,9 +50,10 @@ def get_fingerprint(imgs, cam):
                 continue
         patches = get_patches(img, row_patches, col_patches, PATCH_SIZE)
         for patch in patches:
+            # Non-local denoising from: https://scikit-image.org/docs/dev/auto_examples/filters/plot_nonlocal_means.html
             sigma_est = np.mean(estimate_sigma(patch, multichannel=True))
-            patch_kw = dict(patch_size=5,  # 5x5 patches
-                            patch_distance=6,  # 13x13 search area
+            patch_kw = dict(patch_size=5,
+                            patch_distance=6,
                             multichannel=True)
             dst = denoise_nl_means(patch, h=0.6 * sigma_est, sigma=sigma_est,
                                    fast_mode=True, **patch_kw)
