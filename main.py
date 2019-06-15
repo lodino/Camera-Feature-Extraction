@@ -155,17 +155,17 @@ if __name__ == "__main__":
 
     print('FINAL FEATURES:')
     print(features_dict)
-    print("Converting single points...")
-    scatters = dict()
-    for camera in cameras:
-        scatters[camera] = []
-        imgs = img_collector.imgs[camera]
-        for img in imgs:
-            fp = fingerprint.get_fingerprint([img], camera)
-            scatters[camera].append(extract_features(fp, cc_pca, bc_pca_1, bc_pca_2, lcc_pca, final_pca).tolist())
-    print("Finished!")
-    print("Saving info of scatters...")
-    scatters_txt = json.dumps(scatters)
-    with open('scatters.txt', 'w+') as f:
-        f.write(scatters_txt)
-    print("Saved to scatters.txt!")
+    # print("Converting single points...")
+    # scatters = dict()
+    # for camera in cameras:
+    #     scatters[camera] = []
+    #     imgs = img_collector.imgs[camera]
+    #     for img in imgs:
+    #         fp = fingerprint.get_fingerprint([img], camera)
+    #         scatters[camera].append(extract_features(fp, cc_pca, bc_pca_1, bc_pca_2, lcc_pca, final_pca).tolist())
+    # print("Finished!")
+    # print("Saving info of scatters...")
+    # scatters_txt = json.dumps(scatters)
+    # with open('scatters.txt', 'w+') as f:
+    #     f.write(scatters_txt)
+    # print("Saved to scatters.txt!")
