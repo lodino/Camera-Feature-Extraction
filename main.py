@@ -51,8 +51,13 @@ def extract_features(fp, cc_pca, bc_pca_1, bc_pca_2, lcc_pca, final_pca):
     bc2 = block_covariance.get_block_covariance(fp, 3)
     bc2 = eliminate_nan_inf(bc2)
 
-    all_features = np.concatenate((cc_pca.transform(cc), bc_pca_1.transform([bc1]),
-                                   bc_pca_2.transform([bc2]), lcc_pca.transform(lcc), [moments]))
+    transformed_cc = cc_pca.transform(cc)
+    transformed_bc_1 = bc_pca_1.transform([bc1])
+    transformed_bc_2 = bc_pca_2.transform([bc2])
+    transformed_lcc = lcc_pca.transform(lcc)
+
+    all_features = np.concatenate((transformed_cc, transformed_bc_1,
+                                   transformed_bc_2, transformed_lcc, np.array([moments])), axis=1)
     eliminate_nan_inf(all_features)
     final_features = final_pca.transform(all_features)
     return final_features
@@ -154,17 +159,17 @@ if __name__ == "__main__":
 
     print('FINAL FEATURES:')
     print(features_dict)
-    # print("Converting single points...")
-    # scatters = dict()
-    # for camera in cameras:
-    #     scatters[camera] = []
-    #     imgs = img_collector.imgs[camera]
-    #     for img in imgs:
-    #         fp = fingerprint.get_fingerprint([img], camera)
-    #         scatters[camera].append(extract_features(fp, cc_pca, bc_pca_1, bc_pca_2, lcc_pca, final_pca).tolist())
-    # print("Finished!")
-    # print("Saving info of scatters...")
-    # scatters_txt = json.dumps(scatters)
-    # with open('scatters.txt', 'w+') as f:
-    #     f.write(scatters_txt)
-    # print("Saved to scatters.txt!")
+    print("Converting single points...")
+    scatters = dict()
+    for camera in cameras:
+        scatters[camera] = []
+        imgs = img_collector.imgs[camera]
+        for img in imgs:
+            fp = fingerprint.get_fingerprint([img], camera)
+            scatters[camera].append(extract_features(fp, cc_pca, bc_pca_1, bc_pca_2, lcc_pca, final_pca).tolist())
+    print("Finished!")
+    print("Saving info of scatters...")
+    scatters_txt = json.dumps(scatters)
+    with open('scatters.txt', 'w+') as f:
+        f.write(scatters_txt)
+    print("Saved to scatters.txt!")

@@ -1,4 +1,5 @@
 ### Data ###
+scatters.txt
 data_cleaner.py
 data/*
 test/*
