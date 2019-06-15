@@ -102,7 +102,6 @@ if __name__ == "__main__":
             for i in range(4):
                 for j in range(4):
                     cross_correlations.append(cross_correlation.get_cross_correlation(img1, img2, i, j))
-        print(cross_correlations)
         feature_collector.cross_correlations[camera] = np.array(cross_correlations)
 
         # Get linear-pattern correlation (just take one channel is ok, here choose red)
