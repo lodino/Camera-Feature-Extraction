@@ -26,6 +26,7 @@ def extract_camera_name(path: str) -> str:
 
 
 def extract_features(fp, cc_pca, bc_pca_1, bc_pca_2, lcc_pca, final_pca):
+    fp = eliminate_nan_inf(fp)
     # Get statistic normalized central moments of each channel of the fingerprint
     moments = statistical_moments.get_moments(fp)
 
@@ -34,9 +35,10 @@ def extract_features(fp, cc_pca, bc_pca_1, bc_pca_2, lcc_pca, final_pca):
     for pair in list(permutations([0, 1, 2], 2)):
         img1 = fp[:, :, pair[0]]
         img2 = fp[:, :, pair[1]]
-        for i in range(4):
-            for j in range(4):
-                cross_correlations.append(cross_correlation.get_cross_correlation(img1, img2, i, j))
+        # for i in range(4):
+        #     for j in range(4):
+        #         cross_correlations.append(cross_correlation.get_cross_correlation(img1, img2, i, j))
+        cross_correlations.append(cross_correlation.get_cross_correlation(img1, img2, 0, 0))
     cc = np.array([cross_correlations])
     eliminate_nan_inf(cc)
 
@@ -104,9 +106,10 @@ if __name__ == "__main__":
         for pair in list(permutations([0, 1, 2], 2)):
             img1 = fp[:, :, pair[0]]
             img2 = fp[:, :, pair[1]]
-            for i in range(4):
-                for j in range(4):
-                    cross_correlations.append(cross_correlation.get_cross_correlation(img1, img2, i, j))
+            # for i in range(4):
+            #     for j in range(4):
+            #         cross_correlations.append(cross_correlation.get_cross_correlation(img1, img2, i, j))
+            cross_correlations.append(cross_correlation.get_cross_correlation(img1, img2, 0, 0))
         feature_collector.cross_correlations[camera] = np.array(cross_correlations)
 
         # Get linear-pattern correlation (just take one channel is ok, here choose red)

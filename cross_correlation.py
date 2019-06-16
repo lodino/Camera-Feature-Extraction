@@ -7,5 +7,7 @@ def crop_and_pad(img, r_offset, c_offset):
 
 
 def get_cross_correlation(img1, img2, r_offset, c_offset):
-    img2 = crop_and_pad(img2, r_offset, c_offset)
-    return np.correlate(np.ravel(img1), np.ravel(img2))[0]
+    if (r_offset != 0) or (c_offset != 0):
+        img2 = crop_and_pad(img2, r_offset, c_offset)
+    cc = np.sum(img1 * img2)
+    return cc
